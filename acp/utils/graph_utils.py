@@ -45,17 +45,30 @@ def create_torch_geom_single_graph(adj_matrix, node_features, device):
     return geom_data.to(device)
 
 def create_dgl_batch(adj_matrix_batch, node_features, device):
+    
+    print("create_dgl_batch got device:", device)
+
+    if torch.cuda.is_available() and (
+        (isinstance(device, torch.device) and device.type == "cpu") or
+        (isinstance(device, str) and device.lower().startswith("cpu"))
+    ):
+        print("[WARN] device passed is CPU; using cuda:0 instead.")
+        device = torch.device("cuda:0")
+        
     batch_size = adj_matrix_batch.shape[0]
     batch = []
     for b in range(batch_size):
         graph = create_dgl_single_graph(adj_matrix_batch[b], node_features[b], device=device)
         batch.append(graph)
     batch = dgl.batch(batch)
-    batch.device = device
+    batch = batch.to(device)
+
+    print("batched graph device (after dgl.batch):", batch.device)
+
     return batch
 
 def create_dgl_single_graph(adj_matrix, node_features, device):
-    graph = dgl.DGLGraph()
+    graph = dgl.graph()
     N = adj_matrix.shape[0]
     graph.add_nodes(N)
     edge_index = adj_matrix_to_edge_list(adj_matrix)
@@ -66,7 +79,7 @@ def create_dgl_single_graph(adj_matrix, node_features, device):
     return graph.to(device)
 
 def create_dgl_single_graph_from_edge_list(edge_index, node_features, device):
-    graph = dgl.DGLGraph()
+    graph = dgl.graph()
     N = edge_index.max() + 1
     graph.add_nodes(N)
     graph.add_edges(edge_index[0], edge_index[1])
