@@ -11,10 +11,13 @@ from .data_config.mog_data_config import mog_data_params
 from .config.mog_acp_config import mog_acp_params
 from .data_config.sbm_data_beta_crp_config import sbm_data_beta_crp_params
 from .config.sbm_acp_config import sbm_acp_params
+from .data_config.newman_data_config import newman_data_params
+from .config.newman_acp_config import newman_acp_params
 from .models.acp_model import ACP_Model
 
 from .data_generator.mog_generator import get_mog_crp_generator
 from .data_generator.sbm_beta_generator import get_sbm_beta_crp_generator
+from .data_generator.newman_generator import get_nl_mixture_crp_generator
 
 from .encoders.mog_encoder import get_mog_encoder
 from .encoders.sbm_graphsage_encoder import get_sbm_graph_sage_encoder
@@ -35,7 +38,7 @@ parser.add_argument('--n_iter', type=int, default=10000,
                     help="number of training iterations.")
 parser.add_argument('--saved_checkpoint', type=str, default=None,
                     help="if provided (as file path), continue training from the checkpoint.")
-parser.add_argument('--save_every', type=int, default=1000,
+parser.add_argument('--save_every', type=int, default=5000,
                     help="save every.")
 parser.add_argument('--print_every', type=int, default=1,
                     help="print every.")
@@ -59,6 +62,11 @@ def train_acp():
         data_params = sbm_data_beta_crp_params
         params = sbm_acp_params
         get_data_generator = get_sbm_beta_crp_generator
+
+    elif args.data_type == "newman":
+        data_params = newman_data_params
+        params = newman_acp_params
+        get_data_generator = get_nl_mixture_crp_generator
 
     else:
         raise ValueError("Unknown data type: " + args.data_type)
@@ -143,12 +151,17 @@ def train_acp():
         checkpoint = torch.load(args.saved_checkpoint, map_location=device)
         model.load_state_dict(checkpoint['model_state_dict'])
         model.to(device)
+        print("trainer device =", device)  # expected: cuda:0
         optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         it = checkpoint['it']
 
         with open(args.saved_checkpoint[:-3] + "_stats.pkl", 'rb') as f:
             losses, elbos = pickle.load(f)
     #########################
+
+    print("torch:", torch.__version__, torch.version.cuda, 
+      "cuda_available:", torch.cuda.is_available())
+    print("model device:", next(model.parameters()).device)
 
     # total number of iterations
     n_iter = args.n_iter

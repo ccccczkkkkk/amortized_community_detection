@@ -31,12 +31,26 @@ python -m acp.train_acp --model_name acp --data_type sbm_beta_crp --encoder_type
 python -m acp.inference.acp_cluster_sbm --data_type sbm_beta_crp --encoder_type graphsage \
   --model_file ./saved_models/xxxx.pt
 
+# Comparing the performence of clustering SBM graphs using a saved checkpoint by ACP and Louvain
+python -m acp.inference.acp_cluster_sbm_cmp_louvain --data_type sbm_beta_crp --encoder_type graphsage \
+  --model_file ".\saved_models\xxx.pt"
+
+# Inference on SNAP graphs with ACP (GraphSAGE/DGL encoder) and Louvain comparison
+python -m acp.inference.infer_snap --encoder_type graphsage  --model_file .\saved_models\xxx.pt --snap_edge com-youtube.ungraph.txt --snap_comms com-youtube.top5000.cmty.txt --n_graphs 1 --K=5 --max_nodes=100 --gpu 0
+
 ```
 
-### Other types of data
+### Training with other types of data
 
 #### Mixture of Gaussian (MOG)
 ```
 python -m acp.train_acp --model_name mog --data_type mog --encoder_type mog
 ```
 
+### Graph visualization
+
+#### SNAP dataset with ground truth community
+
+```
+python viz_snap_topk.py --snap_edges com-youtube.ungraph.txt--snap_comms com-youtube.top5000.cmty.txt --k 5 --max_nodes 300
+```

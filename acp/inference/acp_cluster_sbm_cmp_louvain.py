@@ -191,7 +191,7 @@ def main():
 
         # Visualization Ground Truth community and acp predicted community
         communities_pred = [set(np.where(labels.cpu().numpy() == c)[0]) for c in np.unique(predicted)]
-        plot_graph_with_communities(G, communities_pred, save_path=os.path.join(fig_dir, f"acp_gnd{i}.png"))
+        plot_graph_with_communities(G, communities_gnd, save_path=os.path.join(fig_dir, f"acp_gnd{i}.png"))
 
         title = experiment_name + " (i={}, N={}, AMI={:.3f}, Q_gnd={:.3f}, Q_pred={:.3f})".format(i, N, ami, Q_gnd, Q_pred)
 
@@ -223,28 +223,28 @@ def main():
             save_name=os.path.join(fig_dir, fname + "_Louvain.png")
         )
 
-        # # Newman method
-        # communities_em_obj = algorithms.em(G, k=3)
+        # Newman method
+        communities_em_obj = algorithms.em(G, k=3)
 
-        # # 构造 pred_em: 节点 -> 社区id（一维）
-        # pred_em = np.empty(N, dtype=int)
-        # for cid, comm in enumerate(communities_em_obj.communities):  # 每个comm是节点列表
-        #     for n in comm:
-        #         pred_em[n] = cid
+        # pred_em: node -> community id
+        pred_em = np.empty(N, dtype=int)
+        for cid, comm in enumerate(communities_em_obj.communities):  # each communities is a node list
+            for n in comm:
+                pred_em[n] = cid
 
-        # # calculate AMI and Q of Newman method
-        # communities_em = [set(np.where(pred_em == c)[0]) for c in np.unique(pred_em)]
-        # Q_em = modularity(G, communities_em)
-        # ami_em = adjusted_mutual_info_score(labels_np, pred_em)
+        # calculate AMI and Q of Newman method
+        communities_em = [set(np.where(pred_em == c)[0]) for c in np.unique(pred_em)]
+        Q_em = modularity(G, communities_em)
+        ami_em = adjusted_mutual_info_score(labels_np, pred_em)
 
-        # # plot adjacent matrix of Newman
-        # pred_em_sorted = remap_labels_by_cluster_size(torch.from_numpy(pred_em)).numpy()
-        # title_em = f"Newman (i={i}, N={N}, AMI={ami_em:.3f}, Q_gnd={Q_gnd:.3f}, Q_em={Q_em:.3f})"
-        # plot_colored_adj_matrix_with_prediction(
-        #     adj_matrix_np, labels_sorted, pred_em_sorted, DEFAULT_COLORS,
-        #     title=title_em, fontsize=16, bg_colors=['white','dimgray'],
-        #     save_name=os.path.join(fig_dir, fname + "_Newman.png")
-        # )
+        # plot adjacent matrix of Newman
+        pred_em_sorted = remap_labels_by_cluster_size(torch.from_numpy(pred_em)).numpy()
+        title_em = f"Newman (i={i}, N={N}, AMI={ami_em:.3f}, Q_gnd={Q_gnd:.3f}, Q_em={Q_em:.3f})"
+        plot_colored_adj_matrix_with_prediction(
+            adj_matrix_np, labels_sorted, pred_em_sorted, DEFAULT_COLORS,
+            title=title_em, fontsize=16, bg_colors=['white','dimgray'],
+            save_name=os.path.join(fig_dir, fname + "_Newman.png")
+        )
 
     all_metrics["AMI"] = all_amis
     all_metrics["time"] = all_times

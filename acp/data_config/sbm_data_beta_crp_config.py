@@ -9,10 +9,10 @@ sbm_data_beta_crp_params = {
     'maxK': 12,  # max number of clusters to generate
     
     # SBM 
-    'within_alpha': 6, 
-    'within_beta': 3,      
+    'within_alpha': 5,
+    'within_beta': 5,
     'between_alpha': 1,
-    'between_beta': 5,
+    'between_beta': 50,
 
     # extra node features
     'random_embed_dim': 0,

@@ -45,7 +45,7 @@ def plot_colored_adj_matrix_with_prediction(
     sns.set()
     sns.set_style('white')
     assert(len(colors) >= max(len(set(labels)), len(set(predicted))))
-    fig, axes = plt.subplots(1, 2, figsize=(10, 5))
+    fig, axes = plt.subplots(1, 2, figsize=(20, 10))
 
     plot_colored_heatmap(adj_matrix, labels, axes[0], colors, bg_colors=bg_colors)
     axes[0].set_title("Ground Truth", fontsize=fontsize)
